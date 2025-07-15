@@ -46,6 +46,7 @@ All features can be enabled or disabled through the build-time configuration ([`
 * Supports integration with **user-space security systems** for enhanced protection.
 
 ### 🌐 REST API (Experimental)
+
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
 * Stores created rules in a small SQLite database `filters.db` and reapplies them on startup.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.

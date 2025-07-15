@@ -46,6 +46,7 @@ All features can be enabled or disabled through the build-time configuration ([`
 * Supports integration with **user-space security systems** for enhanced protection.
 
 ### 🌐 REST API (Experimental)
+
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
 * Stores created rules and attack logs in a small SQLite database `filters.db` and reapplies the rules on startup. The `xdpfw` loader automatically logs filtered packets to this database.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
@@ -114,8 +115,6 @@ Retrieve recent attack statistics:
 ```bash
 curl -H "Authorization: Bearer $XDPFW_API_TOKEN" http://localhost:8080/stats
 ```
-
-
 Update rule index 1:
 
 ```bash

@@ -2,7 +2,7 @@
 #include <sqlite3.h>
 
 static sqlite3* log_db = NULL;
-static const char* default_db_path = "api/filters.db";
+static const char* default_db_path = "/var/lib/xdpfw/filters.db";
 
 int init_log_db(const char* path)
 {

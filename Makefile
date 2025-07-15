@@ -189,6 +189,7 @@ libxdp_clean:
 
 install:
 	mkdir -p $(ETC_DIR)
+	mkdir -p /var/lib/xdpfw
 
 	cp -n xdpfw.conf.example $(ETC_DIR)/xdpfw.conf
 

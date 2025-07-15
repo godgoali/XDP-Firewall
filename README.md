@@ -48,7 +48,7 @@ All features can be enabled or disabled through the build-time configuration ([`
 ### 🌐 REST API (Experimental)
 
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
-* Stores created rules and attack logs in a small SQLite database `filters.db` and reapplies the rules on startup. The `xdpfw` loader automatically logs filtered packets to this database.
+* Stores created rules and attack logs in a small SQLite database located at `/var/lib/xdpfw/filters.db` (override with `XDPFW_STATS_DB`). The `xdpfw` loader automatically logs filtered packets to this database and the API reloads rules at startup.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
 * Uses a simple **Bearer token** for authentication. Set `XDPFW_API_TOKEN` before starting the service.
 * Includes a `systemd` unit file `other/xdpfw-api.service` for running the server as a daemon.
@@ -62,6 +62,7 @@ Run it via (set your token first):
 
 ```bash
 export XDPFW_API_TOKEN=changeme
+export XDPFW_STATS_DB=/var/lib/xdpfw/filters.db
 ./api/xdpfw_api
 ```
 
@@ -71,6 +72,7 @@ To run it as a service:
 
 ```bash
 sudo cp other/xdpfw-api.service /etc/systemd/system/
+sudo mkdir -p /var/lib/xdpfw
 sudo systemctl enable --now xdpfw-api
 ```
 
@@ -115,6 +117,7 @@ Retrieve recent attack statistics:
 ```bash
 curl -H "Authorization: Bearer $XDPFW_API_TOKEN" http://localhost:8080/stats
 ```
+
 Update rule index 1:
 
 ```bash

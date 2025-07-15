@@ -15,7 +15,8 @@ static void scat(char *dst, const char *src, size_t siz)
     }
 }
 
-static const char *DB_PATH = "api/filters.db";
+static const char *DB_PATH = "/var/lib/xdpfw/filters.db";
+static const char *db_path = NULL;
 static const char *ADD_BIN = "/usr/bin/xdpfw-add";
 static const char *DEL_BIN = "/usr/bin/xdpfw-del";
 static const char *AUTH_TOKEN = "changeme";
@@ -61,7 +62,10 @@ static int remove_filter(int idx) {
 
 // Initialize database
 static void init_db(void) {
-  if (sqlite3_open(DB_PATH, &db) != SQLITE_OK) {
+
+  const char *env = getenv("XDPFW_STATS_DB");
+  db_path = (env && *env) ? env : DB_PATH;
+  if (sqlite3_open(db_path, &db) != SQLITE_OK) {
     fprintf(stderr, "Failed to open DB\n");
     exit(1);
   }

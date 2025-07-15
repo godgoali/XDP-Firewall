@@ -3,6 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+
+/* Concatenate strings safely */
+static void scat(char *dst, const char *src, size_t siz)
+{
+    size_t len = strlen(dst);
+    if (len < siz - 1)
+    {
+        strncat(dst, src, siz - len - 1);
+    }
+}
 
 static const char *DB_PATH = "api/filters.db";
 static const char *ADD_BIN = "/usr/bin/xdpfw-add";
@@ -25,10 +36,10 @@ static void json_to_args(struct mg_str body, char *buf, size_t len) {
     mg_json_unescape(val, v, sizeof(v));
     if (strcmp(v, "true") == 0) strcpy(v, "1");
     else if (strcmp(v, "false") == 0) strcpy(v, "0");
-    if (buf[0] != '\0') strlcat(buf, " ", len);
+    if (buf[0] != '\0') scat(buf, " ", len);
     char tmp[128];
     snprintf(tmp, sizeof(tmp), "--%s=%s", k, v);
-    strlcat(buf, tmp, len);
+    scat(buf, tmp, len);
   }
 }
 

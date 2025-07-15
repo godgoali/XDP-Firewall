@@ -50,7 +50,7 @@ All features can be enabled or disabled through the build-time configuration ([`
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
 * Stores created rules in a small SQLite database `filters.db` and reapplies them on startup.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
-* Build the server with:
+* Build the server with (requires `libsqlite3-dev`):
 
 ```bash
 gcc api/xdpfw_api.c api/mongoose.c -lsqlite3 -pthread -o api/xdpfw_api
@@ -108,6 +108,8 @@ Before building, ensure the following packages are installed. These packages can
 ```bash
 # Install dependencies.
 sudo apt install -y libconfig-dev llvm clang libelf-dev build-essential
+# Required for the REST API server
+sudo apt install -y libsqlite3-dev
 
 # Install dependencies for building LibXDP and LibBPF.
 sudo apt install -y libpcap-dev m4 gcc-multilib

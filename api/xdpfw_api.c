@@ -62,6 +62,7 @@ static int remove_filter(int idx) {
 
 // Initialize database
 static void init_db(void) {
+
   const char *env = getenv("XDPFW_STATS_DB");
   db_path = (env && *env) ? env : DB_PATH;
   if (sqlite3_open(db_path, &db) != SQLITE_OK) {
@@ -161,6 +162,7 @@ static void handle(struct mg_connection *c, int ev, void *ev_data) {
       } else {
         mg_http_reply(c, 405, "", "");
       }
+
     } else if (match_uri(hm, "/stats")) {
       if (method_is(hm->method, "GET")) {
         char buf[8192];

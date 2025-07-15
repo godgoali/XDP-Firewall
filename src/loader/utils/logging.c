@@ -1,4 +1,34 @@
 #include <loader/utils/logging.h>
+#include <sqlite3.h>
+
+static sqlite3* log_db = NULL;
+static const char* default_db_path = "api/filters.db";
+
+int init_log_db(const char* path)
+{
+    if (!path || !*path)
+    {
+        const char* env = getenv("XDPFW_STATS_DB");
+        path = (env && *env) ? env : default_db_path;
+    }
+    if (sqlite3_open(path, &log_db) != SQLITE_OK)
+    {
+        log_db = NULL;
+        return 1;
+    }
+    const char* sql = "CREATE TABLE IF NOT EXISTS logs (ts INTEGER, src_ip TEXT, dst_ip TEXT, protocol INTEGER, bps INTEGER, len INTEGER, status TEXT, block_time INTEGER)";
+    sqlite3_exec(log_db, sql, NULL, NULL, NULL);
+    return 0;
+}
+
+void close_log_db(void)
+{
+    if (log_db)
+    {
+        sqlite3_close(log_db);
+        log_db = NULL;
+    }
+}
 
 /**
  * Prints a log message to stdout/stderr along with a file if specified.
@@ -164,7 +194,26 @@ int hdl_filters_rb_event(void* ctx, void* data, size_t sz)
 
     const char* protocol_str = get_protocol_str_by_id(e->protocol);
 
+
     log_msg(cfg, 0, 0, "[FILTER %d] %s %s packet '%s:%d' => '%s:%d' (IP PPS => %llu, IP BPS => %llu, Flow PPS => %llu, Flow BPS => %llu Filter Block Time => %llu, length => %d)...", e->filter_id + 1, action, protocol_str, src_ip_str, htons(e->src_port), dst_ip_str, htons(e->dst_port), e->ip_pps, e->ip_bps, e->flow_pps, e->flow_bps, filter->block_time, e->length);
+
+    if (log_db)
+    {
+        sqlite3_stmt* st;
+        if (sqlite3_prepare_v2(log_db, "INSERT INTO logs(ts, src_ip, dst_ip, protocol, bps, len, status, block_time) VALUES(?,?,?,?,?,?,?,?)", -1, &st, NULL) == SQLITE_OK)
+        {
+            sqlite3_bind_int64(st, 1, e->ts);
+            sqlite3_bind_text(st, 2, src_ip_str, -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 3, dst_ip_str, -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(st, 4, e->protocol);
+            sqlite3_bind_int64(st, 5, e->ip_bps);
+            sqlite3_bind_int(st, 6, e->length);
+            sqlite3_bind_text(st, 7, action, -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(st, 8, filter->block_time);
+            sqlite3_step(st);
+            sqlite3_finalize(st);
+        }
+    }
 
     return 0;
 }

@@ -45,6 +45,39 @@ All features can be enabled or disabled through the build-time configuration ([`
 * CLI utilities (`xdpfw-add`, `xdpfw-del`) enable **dynamic rule** management without restarting the firewall.
 * Supports integration with **user-space security systems** for enhanced protection.
 
+### 🌐 REST API (Experimental)
+* Provides a simple Flask-based service in `api/xdpfw_api.py`.
+* Exposes endpoints to add or remove filter rules using the existing CLI tools.
+* Start the API with:
+
+```bash
+pip install flask
+python3 api/xdpfw_api.py
+```
+
+Once running, the server listens on `http://localhost:8080/`.
+
+#### Endpoints
+
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `POST` | `/filters` | Add a rule using the same flags as `xdpfw-add` in JSON form. |
+| `DELETE` | `/filters/<idx>` | Remove the rule with the given index via `xdpfw-del`. |
+
+Example request to add a rule:
+
+```bash
+curl -X POST http://localhost:8080/filters \
+     -H "Content-Type: application/json" \
+     -d '{"enabled": true, "log": true, "action": 0, "sip": "10.0.0.1"}'
+```
+
+To delete rule index 0:
+
+```bash
+curl -X DELETE http://localhost:8080/filters/0
+```
+
 ## 🛠️ Building & Installing
 Before building, ensure the following packages are installed. These packages can be installed with `apt` on Debian-based systems (e.g. Ubuntu, etc.), but there should be similar names in other package managers.
 

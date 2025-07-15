@@ -46,22 +46,32 @@ All features can be enabled or disabled through the build-time configuration ([`
 * Supports integration with **user-space security systems** for enhanced protection.
 
 ### 🌐 REST API (Experimental)
-* Provides a simple Flask-based service in `api/xdpfw_api.py`.
-* Exposes endpoints to add or remove filter rules using the existing CLI tools.
-* Start the API with:
+
+* Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
+* Stores created rules in a small SQLite database `filters.db` and reapplies them on startup.
+* Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
+* Build the server with:
 
 ```bash
-pip install flask
-python3 api/xdpfw_api.py
+gcc api/xdpfw_api.c api/mongoose.c -lsqlite3 -pthread -o api/xdpfw_api
 ```
 
-Once running, the server listens on `http://localhost:8080/`.
+Run it via:
+
+```bash
+./api/xdpfw_api
+```
+
+The server listens on `http://localhost:8080/`.
 
 #### Endpoints
 
 | Method | Path | Description |
 | ------ | ---- | ----------- |
-| `POST` | `/filters` | Add a rule using the same flags as `xdpfw-add` in JSON form. |
+| `GET` | `/filters` | List all saved filter rules. |
+| `GET` | `/filters/<idx>` | Retrieve a single rule. |
+| `POST` | `/filters` | Create a new rule using the same flags as `xdpfw-add` in JSON form. |
+| `PATCH` | `/filters/<idx>` | Update the rule at the given index. |
 | `DELETE` | `/filters/<idx>` | Remove the rule with the given index via `xdpfw-del`. |
 
 Example request to add a rule:
@@ -72,7 +82,21 @@ curl -X POST http://localhost:8080/filters \
      -d '{"enabled": true, "log": true, "action": 0, "sip": "10.0.0.1"}'
 ```
 
-To delete rule index 0:
+Retrieve all rules:
+
+```bash
+curl http://localhost:8080/filters
+```
+
+Update rule index 1:
+
+```bash
+curl -X PATCH http://localhost:8080/filters/1 \
+     -H "Content-Type: application/json" \
+     -d '{"action": 1}'
+```
+
+Delete rule index 0:
 
 ```bash
 curl -X DELETE http://localhost:8080/filters/0

@@ -1,0 +1,12 @@
+[Unit]
+Description=XDP Firewall REST API service
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+ExecStart=/usr/bin/xdpfw_api
+Environment=XDPFW_API_TOKEN=changeme
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

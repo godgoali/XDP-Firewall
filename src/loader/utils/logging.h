@@ -20,3 +20,6 @@ void log_msg(config__t* cfg, int req_lvl, int error, const char* msg, ...);
 
 void poll_filters_rb(struct ring_buffer* rb);
 int hdl_filters_rb_event(void* ctx, void* data, size_t sz);
+
+int init_log_db(const char* path);
+void close_log_db(void);

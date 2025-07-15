@@ -48,21 +48,31 @@ All features can be enabled or disabled through the build-time configuration ([`
 ### 🌐 REST API (Experimental)
 
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
-* Stores created rules in a small SQLite database `filters.db` and reapplies them on startup.
+* Stores created rules and attack logs in a small SQLite database `filters.db` and reapplies the rules on startup. The `xdpfw` loader automatically logs filtered packets to this database.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
+* Uses a simple **Bearer token** for authentication. Set `XDPFW_API_TOKEN` before starting the service.
+* Includes a `systemd` unit file `other/xdpfw-api.service` for running the server as a daemon.
 * Build the server with (requires `libsqlite3-dev`):
 
 ```bash
 gcc api/xdpfw_api.c api/mongoose.c -lsqlite3 -pthread -o api/xdpfw_api
 ```
 
-Run it via:
+Run it via (set your token first):
 
 ```bash
+export XDPFW_API_TOKEN=changeme
 ./api/xdpfw_api
 ```
 
 The server listens on `http://localhost:8080/`.
+
+To run it as a service:
+
+```bash
+sudo cp other/xdpfw-api.service /etc/systemd/system/
+sudo systemctl enable --now xdpfw-api
+```
 
 #### Endpoints
 
@@ -73,33 +83,51 @@ The server listens on `http://localhost:8080/`.
 | `POST` | `/filters` | Create a new rule using the same flags as `xdpfw-add` in JSON form. |
 | `PATCH` | `/filters/<idx>` | Update the rule at the given index. |
 | `DELETE` | `/filters/<idx>` | Remove the rule with the given index via `xdpfw-del`. |
+| `GET` | `/stats` | List recent attack log entries. |
+
+Typical responses:
+
+```
+201 Created  - rule successfully added
+200 OK       - rule retrieved, updated or deleted
+400 Bad Request - invalid JSON or failed apply
+401 Unauthorized - missing or wrong token
+404 Not Found - rule index does not exist
+```
 
 Example request to add a rule:
 
 ```bash
 curl -X POST http://localhost:8080/filters \
      -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $XDPFW_API_TOKEN" \
      -d '{"enabled": true, "log": true, "action": 0, "sip": "10.0.0.1"}'
 ```
 
 Retrieve all rules:
 
 ```bash
-curl http://localhost:8080/filters
+curl -H "Authorization: Bearer $XDPFW_API_TOKEN" http://localhost:8080/filters
 ```
 
+Retrieve recent attack statistics:
+
+```bash
+curl -H "Authorization: Bearer $XDPFW_API_TOKEN" http://localhost:8080/stats
+```
 Update rule index 1:
 
 ```bash
 curl -X PATCH http://localhost:8080/filters/1 \
      -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $XDPFW_API_TOKEN" \
      -d '{"action": 1}'
 ```
 
 Delete rule index 0:
 
 ```bash
-curl -X DELETE http://localhost:8080/filters/0
+curl -X DELETE -H "Authorization: Bearer $XDPFW_API_TOKEN" http://localhost:8080/filters/0
 ```
 
 ## 🛠️ Building & Installing

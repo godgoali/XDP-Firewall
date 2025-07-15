@@ -153,6 +153,8 @@ int main(int argc, char *argv[])
         print_tool_info();
     }
 
+    init_log_db(NULL);
+
     // Check first interface.
     if (!cfg.interfaces[0])
     {
@@ -540,6 +542,8 @@ int main(int argc, char *argv[])
 
     // Lastly, close the XDP program.
     xdp_program__close(prog);
+
+    close_log_db();
 
     log_msg(&cfg, 1, 0, "Exiting.\n");
 

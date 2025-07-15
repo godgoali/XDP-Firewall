@@ -118,7 +118,7 @@ endif
 
 # Flags.
 FLAGS = -O2 -g
-FLAGS_LOADER = -lconfig -lelf -lz
+FLAGS_LOADER = -lconfig -lelf -lz -lsqlite3
 
 ifeq ($(LIBXDP_STATIC), 1)
 	FLAGS += -D__LIBXDP_STATIC__
@@ -189,14 +189,17 @@ libxdp_clean:
 
 install:
 	mkdir -p $(ETC_DIR)
-	
+	mkdir -p /var/lib/xdpfw
+
 	cp -n xdpfw.conf.example $(ETC_DIR)/xdpfw.conf
 
 	cp -n other/xdpfw.service /etc/systemd/system/
+	cp -n other/xdpfw-api.service /etc/systemd/system/
 
 	cp -f $(BUILD_LOADER_DIR)/$(LOADER_OUT) /usr/bin
 	cp -f $(BUILD_RULE_ADD_DIR)/$(RULE_ADD_OUT) /usr/bin
 	cp -f $(BUILD_RULE_DEL_DIR)/$(RULE_DEL_OUT) /usr/bin
+	cp -f api/xdpfw_api /usr/bin
 
 	cp -f $(BUILD_XDP_DIR)/$(XDP_OBJ) $(ETC_DIR)
 

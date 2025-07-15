@@ -45,12 +45,70 @@ All features can be enabled or disabled through the build-time configuration ([`
 * CLI utilities (`xdpfw-add`, `xdpfw-del`) enable **dynamic rule** management without restarting the firewall.
 * Supports integration with **user-space security systems** for enhanced protection.
 
+### 🌐 REST API (Experimental)
+* Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
+* Stores created rules in a small SQLite database `filters.db` and reapplies them on startup.
+* Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
+* Build the server with (requires `libsqlite3-dev`):
+
+```bash
+gcc api/xdpfw_api.c api/mongoose.c -lsqlite3 -pthread -o api/xdpfw_api
+```
+
+Run it via:
+
+```bash
+./api/xdpfw_api
+```
+
+The server listens on `http://localhost:8080/`.
+
+#### Endpoints
+
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `GET` | `/filters` | List all saved filter rules. |
+| `GET` | `/filters/<idx>` | Retrieve a single rule. |
+| `POST` | `/filters` | Create a new rule using the same flags as `xdpfw-add` in JSON form. |
+| `PATCH` | `/filters/<idx>` | Update the rule at the given index. |
+| `DELETE` | `/filters/<idx>` | Remove the rule with the given index via `xdpfw-del`. |
+
+Example request to add a rule:
+
+```bash
+curl -X POST http://localhost:8080/filters \
+     -H "Content-Type: application/json" \
+     -d '{"enabled": true, "log": true, "action": 0, "sip": "10.0.0.1"}'
+```
+
+Retrieve all rules:
+
+```bash
+curl http://localhost:8080/filters
+```
+
+Update rule index 1:
+
+```bash
+curl -X PATCH http://localhost:8080/filters/1 \
+     -H "Content-Type: application/json" \
+     -d '{"action": 1}'
+```
+
+Delete rule index 0:
+
+```bash
+curl -X DELETE http://localhost:8080/filters/0
+```
+
 ## 🛠️ Building & Installing
 Before building, ensure the following packages are installed. These packages can be installed with `apt` on Debian-based systems (e.g. Ubuntu, etc.), but there should be similar names in other package managers.
 
 ```bash
 # Install dependencies.
 sudo apt install -y libconfig-dev llvm clang libelf-dev build-essential
+# Required for the REST API server
+sudo apt install -y libsqlite3-dev
 
 # Install dependencies for building LibXDP and LibBPF.
 sudo apt install -y libpcap-dev m4 gcc-multilib

@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <time.h>
+#include <sqlite3.h>
 
 #include <common/all.h>
 
@@ -23,3 +24,4 @@ int hdl_filters_rb_event(void* ctx, void* data, size_t sz);
 
 int init_log_db(const char* path);
 void close_log_db(void);
+sqlite3* get_log_db(void);

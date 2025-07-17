@@ -92,7 +92,49 @@ int calc_stats(int map_stats, int cpus, int per_second)
     printf("\033[1;31mDropped:\033[0m %s  |  ", dropped_str);
     printf("\033[1;34mPassed:\033[0m %s", passed_str);
 
-    fflush(stdout);    
+    fflush(stdout);
 
     return EXIT_SUCCESS;
+}
+
+int save_stats_db(sqlite3* db, int map_stats, int cpus)
+{
+    if (!db)
+    {
+        return 1;
+    }
+
+    u32 key = 0;
+    stats_t stats[MAX_CPUS];
+    memset(stats, 0, sizeof(stats));
+
+    if (bpf_map_lookup_elem(map_stats, &key, stats) != 0)
+    {
+        return 1;
+    }
+
+    u64 allowed = 0, dropped = 0, passed = 0;
+
+    for (int i = 0; i < cpus; i++)
+    {
+        allowed += stats[i].allowed;
+        dropped += stats[i].dropped;
+        passed += stats[i].passed;
+    }
+
+    sqlite3_stmt* st;
+    if (sqlite3_prepare_v2(db, "INSERT INTO stats(ts, allowed, dropped, passed) VALUES(?,?,?,?)", -1, &st, NULL) != SQLITE_OK)
+    {
+        return 1;
+    }
+
+    sqlite3_bind_int64(st, 1, time(NULL));
+    sqlite3_bind_int64(st, 2, allowed);
+    sqlite3_bind_int64(st, 3, dropped);
+    sqlite3_bind_int64(st, 4, passed);
+
+    sqlite3_step(st);
+    sqlite3_finalize(st);
+
+    return 0;
 }

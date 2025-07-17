@@ -492,6 +492,8 @@ int main(int argc, char *argv[])
             {
                 log_msg(&cfg, 1, 0, "[WARNING] Failed to calculate packet stats. Stats map FD => %d...\n", map_stats);
             }
+
+            save_stats_db(get_log_db(), map_stats, cpus);
         }
 
 #if defined(ENABLE_FILTERS) && defined(ENABLE_FILTER_LOGGING)

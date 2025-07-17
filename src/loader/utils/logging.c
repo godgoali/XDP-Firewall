@@ -18,6 +18,8 @@ int init_log_db(const char* path)
     }
     const char* sql = "CREATE TABLE IF NOT EXISTS logs (ts INTEGER, src_ip TEXT, dst_ip TEXT, protocol INTEGER, bps INTEGER, len INTEGER, status TEXT, block_time INTEGER)";
     sqlite3_exec(log_db, sql, NULL, NULL, NULL);
+    const char* sql2 = "CREATE TABLE IF NOT EXISTS stats (ts INTEGER, allowed INTEGER, dropped INTEGER, passed INTEGER)";
+    sqlite3_exec(log_db, sql2, NULL, NULL, NULL);
     return 0;
 }
 
@@ -28,6 +30,11 @@ void close_log_db(void)
         sqlite3_close(log_db);
         log_db = NULL;
     }
+}
+
+sqlite3* get_log_db(void)
+{
+    return log_db;
 }
 
 /**

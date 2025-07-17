@@ -48,7 +48,7 @@ All features can be enabled or disabled through the build-time configuration ([`
 ### 🌐 REST API (Experimental)
 
 * Lightweight C service built with [Mongoose](https://github.com/cesanta/mongoose) in `api/xdpfw_api.c`.
-* Stores created rules and attack logs in a small SQLite database located at `/var/lib/xdpfw/filters.db` (override with `XDPFW_STATS_DB`). The `xdpfw` loader automatically logs filtered packets to this database and the API reloads rules at startup.
+* Stores created rules, attack logs, and packet counters in a small SQLite database located at `/var/lib/xdpfw/filters.db` (override with `XDPFW_STATS_DB`). The `xdpfw` loader automatically logs filtered packets and periodic statistics to this database and the API reloads rules at startup.
 * Exposes endpoints to create, update, list and delete dynamic filter rules through the existing CLI utilities.
 * Uses a simple **Bearer token** for authentication. Set `XDPFW_API_TOKEN` before starting the service.
 * Includes a `systemd` unit file `other/xdpfw-api.service` for running the server as a daemon.

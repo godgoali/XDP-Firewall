@@ -154,7 +154,7 @@ You can use `git` to clone this project. Make sure to include the `--recursive` 
 
 ```bash
 # Clone repository via Git. Use recursive flag to download XDP Tools sub-module.
-git clone --recursive https://github.com/gamemann/XDP-Firewall.git
+git clone --recursive https://github.com/godgoali/XDP-Firewall.git
 
 # Change directory to cloned repository.
 cd XDP-Firewall
